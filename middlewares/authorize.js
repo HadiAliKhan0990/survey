@@ -13,13 +13,15 @@ exports.authorizeMiddleware = (requiredRoles) => {
 
       const user = await User.findByPk(decoded.userId);
 
+      const userRole = user.role.toLowerCase();
+
       if (!user) {
         return res
           .status(HTTP_STATUS_CODE.UNAUTHORIZED)
           .json({ message: 'Unauthorized: User not found.' });
       }
 
-      if (!requiredRoles.includes(user.role)) {
+      if (!requiredRoles.includes(userRole)) {
         return res
           .status(HTTP_STATUS_CODE.FORBIDDEN)
           .json({ message: 'Forbidden: Insufficient permissions.' });
