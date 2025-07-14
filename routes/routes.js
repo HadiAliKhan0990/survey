@@ -1,5 +1,3 @@
-const { authMiddleware } = require('../middlewares/auth');
-const authRoutes = require('./authRoutes');
 const surveyRoutes = require('./surveyRoutes');
 const questionRoutes = require('./questionRoutes');
 const ratingRoutes = require('./ratingRoutes');
@@ -17,20 +15,13 @@ app.get('/api/test', (req, res) => {
   res.status(200).json({ message: 'API is working!' });
 });
 
-// app routes protected test
-app.get('/api/', authMiddleware, (req, res) => {
-  res.status(200).json({ message: 'Protected API is working!' });
-});
+app.use('/api/survey', surveyRoutes);
 
-app.use('/api/auth', authRoutes);
+app.use('/api/question', questionRoutes);
 
-app.use('/api/survey', authMiddleware, surveyRoutes);
+app.use('/api/rating', ratingRoutes);
 
-app.use('/api/question', authMiddleware, questionRoutes);
-
-app.use('/api/rating', authMiddleware, ratingRoutes);
-
-app.use('/api/stat', authMiddleware, statRoutes);
+app.use('/api/stat', statRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 3000;

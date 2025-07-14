@@ -1,7 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const Question = require('./question');
-const User = require('./user');
 
 const Rating = sequelize.define(
   'Rating',
@@ -19,28 +17,24 @@ const Rating = sequelize.define(
         max: 5,
       },
     },
-    userId: {
+    user_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      references: {
-        model: 'users', // Matches User model table name
-        key: 'id',
-      },
-      onDelete: 'CASCADE',
     },
-    questionId: {
+    question_id: {
       type: DataTypes.UUID,
       allowNull: false,
-      references: {
-        model: 'questions', // Matches Question model table name
-        key: 'id',
-      },
-      onDelete: 'CASCADE',
+    },
+    status: {
+      type: DataTypes.ENUM('ACTIVE', 'PENDING', 'DE_ACTIVE'),
+      defaultValue: 'ACTIVE',
     },
   },
   {
     tableName: 'ratings',
     timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
   }
 );
 

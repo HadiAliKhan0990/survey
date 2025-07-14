@@ -10,13 +10,23 @@ const Questions = sequelize.define(
       primaryKey: true,
     },
     text: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: false,
+    },
+    survey_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+    status: {
+      type: DataTypes.ENUM('ACTIVE', 'PENDING', 'DE_ACTIVE'),
+      defaultValue: 'ACTIVE',
     },
   },
   {
     tableName: 'questions',
     timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
   }
 );
 

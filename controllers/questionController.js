@@ -15,17 +15,22 @@ const getQuestionsForSurvey = async (req, res) => {
     const { surveyId } = req.params;
 
     // Check if the survey exists
-    const survey = await Survey.findByPk(surveyId, {
-      include: Question, // Include associated questions
-    });
-
+    const survey = await Survey.findByPk(surveyId);
     if (!survey) {
       return res
         .status(HTTP_STATUS_CODE.NOT_FOUND)
         .json({ message: 'Survey not found' });
     }
 
-    res.status(HTTP_STATUS_CODE.OK).json({ questions: survey.Questions }); // Send questions in response
+    // Get questions for this survey
+    const questions = await Question.findAll({
+      where: { 
+        survey_id: surveyId,
+        status: 'ACTIVE'
+      }
+    });
+
+    res.status(HTTP_STATUS_CODE.OK).json({ questions });
   } catch (error) {
     console.error('Error fetching questions:', error);
     res
@@ -55,10 +60,11 @@ const createQuestionForSurvey = async (req, res) => {
     }
 
     // Create the question
-    const question = await Question.create({ text });
-
-    // Associate the question with the survey
-    await survey.addQuestion(question);
+    const question = await Question.create({ 
+      text,
+      survey_id: surveyId,
+      status: 'ACTIVE'
+    });
 
     res
       .status(HTTP_STATUS_CODE.CREATED)
@@ -82,7 +88,7 @@ const updateQuestion = async (req, res) => {
 
   try {
     const { questionId } = req.params;
-    const { text } = req.body;
+    const { text, status } = req.body;
 
     // Find the question by ID
     const question = await Question.findByPk(questionId);
@@ -92,9 +98,8 @@ const updateQuestion = async (req, res) => {
         .json({ message: 'Question not found' });
     }
 
-    // Update the question text
-    question.text = text;
-    await question.save();
+    // Update the question
+    await question.update({ text, status });
 
     res
       .status(HTTP_STATUS_CODE.OK)
@@ -107,10 +112,78 @@ const updateQuestion = async (req, res) => {
   }
 };
 
-module.exports = { updateQuestion };
+const deleteQuestion = async (req, res) => {
+  try {
+    const { questionId } = req.params;
+
+    // Find the question by ID
+    const question = await Question.findByPk(questionId);
+    if (!question) {
+      return res
+        .status(HTTP_STATUS_CODE.NOT_FOUND)
+        .json({ message: 'Question not found' });
+    }
+
+    // Soft delete by updating status
+    await question.update({ status: 'DE_ACTIVE' });
+
+    res
+      .status(HTTP_STATUS_CODE.OK)
+      .json({ message: 'Question deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting question:', error);
+    res
+      .status(HTTP_STATUS_CODE.INTERNAL_SERVER)
+      .json({ message: 'Internal server error' });
+  }
+};
+
+const getQuestionById = async (req, res) => {
+  try {
+    const { questionId } = req.params;
+
+    // Find the question by ID
+    const question = await Question.findByPk(questionId);
+    if (!question) {
+      return res
+        .status(HTTP_STATUS_CODE.NOT_FOUND)
+        .json({ message: 'Question not found' });
+    }
+
+    res
+      .status(HTTP_STATUS_CODE.OK)
+      .json({ question });
+  } catch (error) {
+    console.error('Error fetching question:', error);
+    res
+      .status(HTTP_STATUS_CODE.INTERNAL_SERVER)
+      .json({ message: 'Internal server error' });
+  }
+};
+
+const getAllQuestions = async (req, res) => {
+  try {
+    const questions = await Question.findAll({
+      where: { status: 'ACTIVE' }
+    });
+
+    res.status(HTTP_STATUS_CODE.OK).json({
+      message: 'Questions retrieved successfully',
+      questions,
+    });
+  } catch (error) {
+    console.error('Error fetching questions:', error);
+    res
+      .status(HTTP_STATUS_CODE.INTERNAL_SERVER)
+      .json({ message: 'Internal server error' });
+  }
+};
 
 module.exports = {
   createQuestionForSurvey,
   getQuestionsForSurvey,
   updateQuestion,
+  deleteQuestion,
+  getQuestionById,
+  getAllQuestions,
 };

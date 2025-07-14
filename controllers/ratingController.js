@@ -1,5 +1,4 @@
 const Rating = require('../models/rating');
-const User = require('../models/user');
 const Question = require('../models/question');
 
 const { validationResult } = require('express-validator');
@@ -14,9 +13,9 @@ const saveRating = async (req, res) => {
   }
 
   try {
-    const { questionId, userId, rating } = req.body;
+    const { question_id, user_id, rating } = req.body;
 
-    const isQuestionExist = await Question.findByPk(questionId);
+    const isQuestionExist = await Question.findByPk(question_id);
 
     if (!isQuestionExist) {
       return res
@@ -24,18 +23,18 @@ const saveRating = async (req, res) => {
         .json({ message: 'Question not found' });
     }
 
-    const isUserExist = await Question.findByPk(userId);
+    // Check if user exists (this would be handled by your parent project)
+    // For now, we'll assume the user exists since this is a microservice
 
-    if (isUserExist) {
-      return res
-        .status(HTTP_STATUS_CODE.BAD_REQUEST)
-        .json({ message: 'User not found' });
-    }
-
-    const newSurvey = await Rating.create({ questionId, userId, rating });
+    const newRating = await Rating.create({ 
+      question_id, 
+      user_id, 
+      rating,
+      status: 'ACTIVE'
+    });
     res.status(HTTP_STATUS_CODE.CREATED).json({
       message: 'Rating created successfully',
-      survey: newSurvey,
+      rating: newRating,
     });
   } catch (error) {
     res.status(HTTP_STATUS_CODE.INTERNAL_SERVER).json({
@@ -55,9 +54,9 @@ const updateRating = async (req, res) => {
 
   try {
     const { ratingId } = req.params;
-    const { rating } = req.body;
+    const { rating, status } = req.body;
 
-    // Find the question by ID
+    // Find the rating by ID
     const record = await Rating.findByPk(ratingId);
     if (!record) {
       return res
@@ -66,12 +65,11 @@ const updateRating = async (req, res) => {
     }
 
     // Update the rating
-    record.rating = rating;
-    await record.save();
+    await record.update({ rating, status });
 
     res.status(HTTP_STATUS_CODE.OK).json({
       message: 'Rating updated successfully',
-      record,
+      rating: record,
     });
   } catch (error) {
     res.status(HTTP_STATUS_CODE.INTERNAL_SERVER).json({
@@ -81,4 +79,124 @@ const updateRating = async (req, res) => {
   }
 };
 
-module.exports = { saveRating, updateRating };
+const getRatingById = async (req, res) => {
+  try {
+    const { ratingId } = req.params;
+
+    const rating = await Rating.findByPk(ratingId);
+    if (!rating) {
+      return res
+        .status(HTTP_STATUS_CODE.NOT_FOUND)
+        .json({ message: 'Rating not found' });
+    }
+
+    res.status(HTTP_STATUS_CODE.OK).json({
+      message: 'Rating retrieved successfully',
+      rating,
+    });
+  } catch (error) {
+    res.status(HTTP_STATUS_CODE.INTERNAL_SERVER).json({
+      message: 'Error retrieving rating',
+      error: error.message,
+    });
+  }
+};
+
+const getRatingsByQuestion = async (req, res) => {
+  try {
+    const { questionId } = req.params;
+
+    const ratings = await Rating.findAll({
+      where: { 
+        question_id: questionId,
+        status: 'ACTIVE'
+      }
+    });
+
+    res.status(HTTP_STATUS_CODE.OK).json({
+      message: 'Ratings retrieved successfully',
+      ratings,
+    });
+  } catch (error) {
+    res.status(HTTP_STATUS_CODE.INTERNAL_SERVER).json({
+      message: 'Error retrieving ratings',
+      error: error.message,
+    });
+  }
+};
+
+const getRatingsByUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const ratings = await Rating.findAll({
+      where: { 
+        user_id: userId,
+        status: 'ACTIVE'
+      }
+    });
+
+    res.status(HTTP_STATUS_CODE.OK).json({
+      message: 'Ratings retrieved successfully',
+      ratings,
+    });
+  } catch (error) {
+    res.status(HTTP_STATUS_CODE.INTERNAL_SERVER).json({
+      message: 'Error retrieving ratings',
+      error: error.message,
+    });
+  }
+};
+
+const deleteRating = async (req, res) => {
+  try {
+    const { ratingId } = req.params;
+
+    const rating = await Rating.findByPk(ratingId);
+    if (!rating) {
+      return res
+        .status(HTTP_STATUS_CODE.NOT_FOUND)
+        .json({ message: 'Rating not found' });
+    }
+
+    // Soft delete by updating status
+    await rating.update({ status: 'DE_ACTIVE' });
+
+    res.status(HTTP_STATUS_CODE.OK).json({
+      message: 'Rating deleted successfully',
+    });
+  } catch (error) {
+    res.status(HTTP_STATUS_CODE.INTERNAL_SERVER).json({
+      message: 'Error deleting rating',
+      error: error.message,
+    });
+  }
+};
+
+const getAllRatings = async (req, res) => {
+  try {
+    const ratings = await Rating.findAll({
+      where: { status: 'ACTIVE' }
+    });
+
+    res.status(HTTP_STATUS_CODE.OK).json({
+      message: 'Ratings retrieved successfully',
+      ratings,
+    });
+  } catch (error) {
+    res.status(HTTP_STATUS_CODE.INTERNAL_SERVER).json({
+      message: 'Error retrieving ratings',
+      error: error.message,
+    });
+  }
+};
+
+module.exports = { 
+  saveRating, 
+  updateRating, 
+  getRatingById, 
+  getRatingsByQuestion, 
+  getRatingsByUser,
+  deleteRating,
+  getAllRatings
+};

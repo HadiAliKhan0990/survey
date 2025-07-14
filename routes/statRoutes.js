@@ -1,8 +1,5 @@
 const express = require('express');
-
-const { authorizeMiddleware } = require('../middlewares/authorize');
-
-const roles = require('../utils/role');
+const { verifyToken, requireAdmin } = require('../middlewares/authMiddleware');
 
 const {
   graphStatValidations,
@@ -17,24 +14,29 @@ const {
 
 const router = express.Router();
 
-// router.get(
-//   '/:questionId',
-//   authorizeMiddleware([roles.Admin]),
-//   getTotalRatingByQuestionId
-// );
-
+// Admin only routes
 router.get(
   '/:surveyId',
-  authorizeMiddleware([roles.Admin]),
+  verifyToken,
+  requireAdmin,
   questionsWithStatsValidations,
   getTotalRatingsForQuestions
 );
 
 router.get(
   '/',
-  authorizeMiddleware([roles.Admin]),
+  verifyToken,
+  requireAdmin,
   graphStatValidations,
   getRatingsByDateRange
 );
+
+// Uncomment if you want to add this route
+// router.get(
+//   '/question/:questionId',
+//   verifyToken,
+//   requireAdmin,
+//   getTotalRatingByQuestionId
+// );
 
 module.exports = router;
