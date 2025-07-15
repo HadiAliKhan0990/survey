@@ -1,8 +1,8 @@
 const { body } = require('express-validator');
 
 const ratingValidation = [
-  body('questionId').notEmpty().withMessage('questionId is required'),
-  body('userId').notEmpty().withMessage('userId is required'),
+  body('question_id').notEmpty().withMessage('question Id is required'),
+  body('user_id').notEmpty().withMessage('user Id is required'),
   body('rating')
     .notEmpty()
     .withMessage('Rating is required')

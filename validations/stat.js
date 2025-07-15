@@ -14,11 +14,11 @@ const graphStatValidations = [
     .isISO8601()
     .withMessage('endDate must be a valid date'),
 
-  query('surveyId').notEmpty().withMessage('surveyId is required'),
+  query('survey_id').notEmpty().withMessage('survey Id is required'),
 ];
 
 const questionsWithStatsValidations = [
-  param('surveyId').notEmpty().withMessage('surveyId is required'),
+  param('survey_id').notEmpty().withMessage('survey Id is required'),
 ];
 
 module.exports = { graphStatValidations, questionsWithStatsValidations };
