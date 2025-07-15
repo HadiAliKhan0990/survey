@@ -28,6 +28,7 @@ const getTotalRatingByQuestionId = async (req, res) => {
     return res.status(HTTP_STATUS_CODE.OK).json({
       message: 'Ratings fetched successfully',
       totalRating,
+      question: isQuestionExist,
       data: ratings,
     });
   } catch (error) {
@@ -37,6 +38,7 @@ const getTotalRatingByQuestionId = async (req, res) => {
     });
   }
 };
+
 const getTotalRatingsForQuestions = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -49,9 +51,7 @@ const getTotalRatingsForQuestions = async (req, res) => {
     const { survey_id } = req.params;
 
     // Check if the survey exists
-    const survey = await Survey.findByPk(survey_id, {
-      include: Question, // Include associated questions
-    });
+    const survey = await Survey.findByPk(survey_id);
 
     if (!survey) {
       return res
@@ -59,13 +59,21 @@ const getTotalRatingsForQuestions = async (req, res) => {
         .json({ message: 'Survey not found' });
     }
 
-    const question_ids = Array.from(survey.Questions, ({ id }) => id);
+    // Manually find all questions for this survey
+    const questions = await Question.findAll({
+      where: { 
+        survey_id: survey_id,
+        status: 'ACTIVE'
+      }
+    });
 
-    if (!Array.isArray(question_ids) || question_ids.length === 0) {
+    if (!Array.isArray(questions) || questions.length === 0) {
       return res
         .status(HTTP_STATUS_CODE.BAD_REQUEST)
-        .json({ message: 'question_ids must be a non-empty array' });
+        .json({ message: 'No questions found for this survey' });
     }
+
+    const question_ids = questions.map(question => question.id);
 
     // Fetch all ratings where question_id is in the question_ids array
     const ratings = await Rating.findAll({
@@ -82,10 +90,10 @@ const getTotalRatingsForQuestions = async (req, res) => {
       ratingsMap[question_id] += rating;
     });
 
-    // Prepare the response data
-    const results = question_ids.map((question_id) => ({
-      question_id,
-      totalRating: ratingsMap[question_id] || 0, // Default to 0 if no ratings found
+    // Prepare the response data with full question information
+    const results = questions.map((question) => ({
+      question: question,
+      totalRating: ratingsMap[question.id] || 0, // Default to 0 if no ratings found
     }));
 
     return res.status(HTTP_STATUS_CODE.OK).json({
@@ -112,9 +120,7 @@ const getRatingsByDateRange = async (req, res) => {
     const { startDate, endDate, surveyId } = req.query;
 
     // Check if the survey exists
-    const survey = await Survey.findByPk(surveyId, {
-      include: Question, // Include associated questions
-    });
+    const survey = await Survey.findByPk(surveyId);
 
     if (!survey) {
       return res
@@ -122,7 +128,15 @@ const getRatingsByDateRange = async (req, res) => {
         .json({ message: 'Survey not found' });
     }
 
-    const question_ids = Array.from(survey.Questions, ({ id }) => id);
+    // Manually find all questions for this survey
+    const questions = await Question.findAll({
+      where: { 
+        survey_id: surveyId,
+        status: 'ACTIVE'
+      }
+    });
+
+    const question_ids = questions.map(question => question.id);
 
     const ratings = await Rating.findAll({
       where: {
@@ -145,10 +159,10 @@ const getRatingsByDateRange = async (req, res) => {
       ratingsMap[question_id] += rating;
     });
 
-    // Prepare the response data
-    const results = question_ids.map((question_id) => ({
-      question_id,
-      totalRating: ratingsMap[question_id] || 0, // Default to 0 if no ratings found
+    // Prepare the response data with full question information
+    const results = questions.map((question) => ({
+      question: question,
+      totalRating: ratingsMap[question.id] || 0, // Default to 0 if no ratings found
     }));
 
     return res.status(HTTP_STATUS_CODE.OK).json({
