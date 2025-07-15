@@ -7,9 +7,9 @@ const { validationResult } = require('express-validator');
 
 const getTotalRatingByQuestionId = async (req, res) => {
   try {
-    const { questionId } = req.params;
+    const { question_id } = req.params;
 
-    const isQuestionExist = await Question.findByPk(questionId);
+    const isQuestionExist = await Question.findByPk(question_id);
 
     if (!isQuestionExist) {
       return res
@@ -17,9 +17,9 @@ const getTotalRatingByQuestionId = async (req, res) => {
         .json({ message: 'Question not found' });
     }
 
-    // Fetch all ratings for the given questionId
+    // Fetch all ratings for the given question_id
     const ratings = await Rating.findAll({
-      where: { questionId: questionId },
+      where: { question_id: question_id },
     });
 
     // Calculate totalRating (sum of all ratings)
@@ -46,10 +46,10 @@ const getTotalRatingsForQuestions = async (req, res) => {
   }
 
   try {
-    const { surveyId } = req.params;
+    const { survey_id } = req.params;
 
     // Check if the survey exists
-    const survey = await Survey.findByPk(surveyId, {
+    const survey = await Survey.findByPk(survey_id, {
       include: Question, // Include associated questions
     });
 
@@ -59,33 +59,33 @@ const getTotalRatingsForQuestions = async (req, res) => {
         .json({ message: 'Survey not found' });
     }
 
-    const questionIds = Array.from(survey.Questions, ({ id }) => id);
+    const question_ids = Array.from(survey.Questions, ({ id }) => id);
 
-    if (!Array.isArray(questionIds) || questionIds.length === 0) {
+    if (!Array.isArray(question_ids) || question_ids.length === 0) {
       return res
         .status(HTTP_STATUS_CODE.BAD_REQUEST)
-        .json({ message: 'questionIds must be a non-empty array' });
+        .json({ message: 'question_ids must be a non-empty array' });
     }
 
-    // Fetch all ratings where questionId is in the questionIds array
+    // Fetch all ratings where question_id is in the question_ids array
     const ratings = await Rating.findAll({
-      where: { questionId: { [Op.in]: questionIds } },
+      where: { question_id: { [Op.in]: question_ids } },
     });
 
-    // Group ratings by questionId and calculate total rating for each question
+    // Group ratings by question_id and calculate total rating for each question
     const ratingsMap = {};
 
-    ratings.forEach(({ questionId, rating }) => {
-      if (!ratingsMap[questionId]) {
-        ratingsMap[questionId] = 0;
+    ratings.forEach(({ question_id, rating }) => {
+      if (!ratingsMap[question_id]) {
+        ratingsMap[question_id] = 0;
       }
-      ratingsMap[questionId] += rating;
+      ratingsMap[question_id] += rating;
     });
 
     // Prepare the response data
-    const results = questionIds.map((questionId) => ({
-      questionId,
-      totalRating: ratingsMap[questionId] || 0, // Default to 0 if no ratings found
+    const results = question_ids.map((question_id) => ({
+      question_id,
+      totalRating: ratingsMap[question_id] || 0, // Default to 0 if no ratings found
     }));
 
     return res.status(HTTP_STATUS_CODE.OK).json({
@@ -122,33 +122,33 @@ const getRatingsByDateRange = async (req, res) => {
         .json({ message: 'Survey not found' });
     }
 
-    const questionIds = Array.from(survey.Questions, ({ id }) => id);
+    const question_ids = Array.from(survey.Questions, ({ id }) => id);
 
     const ratings = await Rating.findAll({
       where: {
         updatedAt: {
           [Op.between]: [new Date(startDate), new Date(endDate)],
         },
-        questionId: {
-          [Op.in]: questionIds,
+        question_id: {
+          [Op.in]: question_ids,
         },
       },
     });
 
-    // Group ratings by questionId and calculate total rating for each question
+    // Group ratings by question_id and calculate total rating for each question
     const ratingsMap = {};
 
-    ratings.forEach(({ questionId, rating }) => {
-      if (!ratingsMap[questionId]) {
-        ratingsMap[questionId] = 0;
+    ratings.forEach(({ question_id, rating }) => {
+      if (!ratingsMap[question_id]) {
+        ratingsMap[question_id] = 0;
       }
-      ratingsMap[questionId] += rating;
+      ratingsMap[question_id] += rating;
     });
 
     // Prepare the response data
-    const results = questionIds.map((questionId) => ({
-      questionId,
-      totalRating: ratingsMap[questionId] || 0, // Default to 0 if no ratings found
+    const results = question_ids.map((question_id) => ({
+      question_id,
+      totalRating: ratingsMap[question_id] || 0, // Default to 0 if no ratings found
     }));
 
     return res.status(HTTP_STATUS_CODE.OK).json({

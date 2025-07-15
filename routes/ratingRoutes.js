@@ -16,10 +16,10 @@ const { ratingValidation } = require('../validations/rating');
 const router = express.Router();
 
 // Public routes (no authentication required)
-router.get('/public', getAllRatings);
-router.get('/public/question/:questionId', getRatingsByQuestion);
+router.post('/public', ratingValidation, saveRating);
+router.get('/public/question/:question_id', getRatingsByQuestion);
 
-// Authenticated user routes
+// Protected routes (authentication required)
 router.post('/', verifyToken, ratingValidation, saveRating);
 router.put('/:ratingId', verifyToken, ratingValidation, updateRating);
 router.get('/:ratingId', verifyToken, getRatingById);

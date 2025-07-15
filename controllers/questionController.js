@@ -87,11 +87,11 @@ const updateQuestion = async (req, res) => {
   }
 
   try {
-    const { questionId } = req.params;
+    const { question_id } = req.params;
     const { text, status } = req.body;
 
     // Find the question by ID
-    const question = await Question.findByPk(questionId);
+    const question = await Question.findByPk(question_id);
     if (!question) {
       return res
         .status(HTTP_STATUS_CODE.NOT_FOUND)
@@ -114,10 +114,10 @@ const updateQuestion = async (req, res) => {
 
 const deleteQuestion = async (req, res) => {
   try {
-    const { questionId } = req.params;
+    const { question_id } = req.params;
 
     // Find the question by ID
-    const question = await Question.findByPk(questionId);
+    const question = await Question.findByPk(question_id);
     if (!question) {
       return res
         .status(HTTP_STATUS_CODE.NOT_FOUND)
@@ -140,10 +140,10 @@ const deleteQuestion = async (req, res) => {
 
 const getQuestionById = async (req, res) => {
   try {
-    const { questionId } = req.params;
+    const { question_id } = req.params;
 
     // Find the question by ID
-    const question = await Question.findByPk(questionId);
+    const question = await Question.findByPk(question_id);
     if (!question) {
       return res
         .status(HTTP_STATUS_CODE.NOT_FOUND)

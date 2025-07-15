@@ -25,7 +25,7 @@ router.get('/public/:surveyId', surveyIdValidations, getQuestionsForSurvey);
 // Admin only routes
 router.get('/', verifyToken, requireAdmin, getAllQuestions);
 router.get('/:surveyId', verifyToken, requireAdmin, surveyIdValidations, getQuestionsForSurvey);
-router.get('/question/:questionId', verifyToken, requireAdmin, questionIdValidations, getQuestionById);
+router.get('/question/:question_id', verifyToken, requireAdmin, questionIdValidations, getQuestionById);
 
 router.post(
   '/:surveyId',
@@ -36,7 +36,7 @@ router.post(
 );
 
 router.put(
-  '/:questionId',
+  '/:question_id',
   verifyToken,
   requireAdmin,
   questionIdValidations,
@@ -44,6 +44,6 @@ router.put(
   updateQuestion
 );
 
-router.delete('/:questionId', verifyToken, requireAdmin, questionIdValidations, deleteQuestion);
+router.delete('/:question_id', verifyToken, requireAdmin, questionIdValidations, deleteQuestion);
 
 module.exports = router;

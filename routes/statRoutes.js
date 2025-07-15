@@ -2,21 +2,21 @@ const express = require('express');
 const { verifyToken, requireAdmin } = require('../middlewares/authMiddleware');
 
 const {
-  graphStatValidations,
-  questionsWithStatsValidations,
-} = require('../validations/stat');
-
-const {
   getTotalRatingByQuestionId,
   getTotalRatingsForQuestions,
   getRatingsByDateRange,
 } = require('../controllers/statController');
 
+const {
+  graphStatValidations,
+  questionsWithStatsValidations,
+} = require('../validations/stat');
+
 const router = express.Router();
 
 // Admin only routes
 router.get(
-  '/:surveyId',
+  '/:survey_id',
   verifyToken,
   requireAdmin,
   questionsWithStatsValidations,
@@ -31,12 +31,11 @@ router.get(
   getRatingsByDateRange
 );
 
-// Uncomment if you want to add this route
-// router.get(
-//   '/question/:questionId',
-//   verifyToken,
-//   requireAdmin,
-//   getTotalRatingByQuestionId
-// );
+router.get(
+  '/question/:question_id',
+  verifyToken,
+  requireAdmin,
+  getTotalRatingByQuestionId
+);
 
 module.exports = router;

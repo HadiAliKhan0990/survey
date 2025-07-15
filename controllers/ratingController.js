@@ -104,22 +104,21 @@ const getRatingById = async (req, res) => {
 
 const getRatingsByQuestion = async (req, res) => {
   try {
-    const { questionId } = req.params;
+    const { question_id } = req.params;
 
     const ratings = await Rating.findAll({
-      where: { 
-        question_id: questionId,
-        status: 'ACTIVE'
-      }
+      where: {
+        question_id: question_id,
+      },
     });
 
     res.status(HTTP_STATUS_CODE.OK).json({
-      message: 'Ratings retrieved successfully',
+      message: 'Ratings fetched successfully',
       ratings,
     });
   } catch (error) {
     res.status(HTTP_STATUS_CODE.INTERNAL_SERVER).json({
-      message: 'Error retrieving ratings',
+      message: 'Error fetching ratings',
       error: error.message,
     });
   }
