@@ -31,7 +31,7 @@ const Rating = sequelize.define(
     },
   },
   {
-    tableName: 'ratings',
+    tableName: 'Rating',
     timestamps: true,
     createdAt: 'created_at',
     updatedAt: 'updated_at',
