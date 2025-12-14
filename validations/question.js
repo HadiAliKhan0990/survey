@@ -18,9 +18,12 @@ const questionValidations = [
 ];
 
 const surveyIdValidations = [
-  param('survey_id')
-    .notEmpty()
+  param('surveyId')
+    .exists()
     .withMessage('Survey ID is required')
+    .notEmpty()
+    .withMessage('Survey ID cannot be empty')
+    .trim()
     .isUUID()
     .withMessage('Survey ID must be a valid UUID'),
 ];

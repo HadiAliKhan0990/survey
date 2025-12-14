@@ -1,0 +1,19 @@
+services:
+  survey-api:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - .env
+    restart: unless-stopped
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - survey-network
+
+networks:
+  survey-network:
+    driver: bridge
+

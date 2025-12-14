@@ -1,0 +1,553 @@
+================================================================================
+                      SURVEY API DOCUMENTATION
+================================================================================
+
+BASE URL: http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000
+
+AUTHENTICATION:
+- Protected routes require: Authorization: Bearer <token>
+- Admin routes require: Admin privileges + Bearer token
+- Public routes: No authentication required
+
+================================================================================
+                        1. SURVEY ENDPOINTS
+================================================================================
+
+--------------------------------------------------------------------------------
+1.1 GET ALL SURVEYS (PUBLIC)
+--------------------------------------------------------------------------------
+URL: /api/survey/public
+METHOD: GET
+AUTHENTICATION: None (Public)
+DESCRIPTION: Get all surveys without authentication
+
+CURL EXAMPLE:
+curl -X GET "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/survey/public"
+
+--------------------------------------------------------------------------------
+1.2 GET ALL SURVEYS (ADMIN)
+--------------------------------------------------------------------------------
+URL: /api/survey/
+METHOD: GET
+AUTHENTICATION: Required (Admin only)
+DESCRIPTION: Get all surveys (admin access)
+
+CURL EXAMPLE:
+curl -X GET "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/survey/" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+
+--------------------------------------------------------------------------------
+1.3 GET SURVEY BY ID
+--------------------------------------------------------------------------------
+URL: /api/survey/:id
+METHOD: GET
+AUTHENTICATION: Required (Admin only)
+DESCRIPTION: Get a specific survey by ID
+
+URL PARAMETERS:
+  - id (REQUIRED): Survey UUID
+
+CURL EXAMPLE:
+curl -X GET "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/survey/123e4567-e89b-12d3-a456-426614174000" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+
+--------------------------------------------------------------------------------
+1.4 GET SURVEYS BY USER ID
+--------------------------------------------------------------------------------
+URL: /api/survey/user/:userId
+METHOD: GET
+AUTHENTICATION: Required (Admin only)
+DESCRIPTION: Get all surveys created by a specific user
+
+URL PARAMETERS:
+  - userId (REQUIRED): User ID
+
+CURL EXAMPLE:
+curl -X GET "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/survey/user/123" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+
+--------------------------------------------------------------------------------
+1.5 CREATE SURVEY
+--------------------------------------------------------------------------------
+URL: /api/survey/
+METHOD: POST
+AUTHENTICATION: Required (Admin only)
+DESCRIPTION: Create a new survey
+
+REQUEST BODY PARAMETERS:
+  - name (REQUIRED): Survey name (string)
+  - heading (REQUIRED): Survey heading (string)
+
+CURL EXAMPLE:
+curl -X POST "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/survey/" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Customer Satisfaction Survey",
+    "heading": "How satisfied are you with our service?"
+  }'
+
+--------------------------------------------------------------------------------
+1.6 UPDATE SURVEY
+--------------------------------------------------------------------------------
+URL: /api/survey/:id
+METHOD: PUT
+AUTHENTICATION: Required (Admin only)
+DESCRIPTION: Update an existing survey
+
+URL PARAMETERS:
+  - id (REQUIRED): Survey UUID
+
+REQUEST BODY PARAMETERS:
+  - name (REQUIRED): Survey name (string)
+  - heading (REQUIRED): Survey heading (string)
+
+CURL EXAMPLE:
+curl -X PUT "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/survey/123e4567-e89b-12d3-a456-426614174000" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Updated Survey Name",
+    "heading": "Updated Survey Heading"
+  }'
+
+--------------------------------------------------------------------------------
+1.7 DELETE SURVEY
+--------------------------------------------------------------------------------
+URL: /api/survey/:id
+METHOD: DELETE
+AUTHENTICATION: Required (Admin only)
+DESCRIPTION: Delete a survey
+
+URL PARAMETERS:
+  - id (REQUIRED): Survey UUID
+
+CURL EXAMPLE:
+curl -X DELETE "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/survey/123e4567-e89b-12d3-a456-426614174000" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+
+
+================================================================================
+                        2. QUESTION ENDPOINTS
+================================================================================
+
+--------------------------------------------------------------------------------
+2.1 GET ALL QUESTIONS (PUBLIC)
+--------------------------------------------------------------------------------
+URL: /api/question/public
+METHOD: GET
+AUTHENTICATION: None (Public)
+DESCRIPTION: Get all questions without authentication
+
+CURL EXAMPLE:
+curl -X GET "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/question/public"
+
+--------------------------------------------------------------------------------
+2.2 GET QUESTIONS FOR SURVEY (PUBLIC)
+--------------------------------------------------------------------------------
+URL: /api/question/public/:surveyId
+METHOD: GET
+AUTHENTICATION: None (Public)
+DESCRIPTION: Get all questions for a specific survey
+
+URL PARAMETERS:
+  - surveyId (REQUIRED): Survey UUID
+
+CURL EXAMPLE:
+curl -X GET "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/question/public/123e4567-e89b-12d3-a456-426614174000"
+
+--------------------------------------------------------------------------------
+2.3 GET ALL QUESTIONS (ADMIN)
+--------------------------------------------------------------------------------
+URL: /api/question/
+METHOD: GET
+AUTHENTICATION: Required (Admin only)
+DESCRIPTION: Get all questions (admin access)
+
+CURL EXAMPLE:
+curl -X GET "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/question/" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+
+--------------------------------------------------------------------------------
+2.4 GET QUESTIONS FOR SURVEY (ADMIN)
+--------------------------------------------------------------------------------
+URL: /api/question/:surveyId
+METHOD: GET
+AUTHENTICATION: Required (Admin only)
+DESCRIPTION: Get all questions for a specific survey (admin access)
+
+URL PARAMETERS:
+  - surveyId (REQUIRED): Survey UUID
+
+CURL EXAMPLE:
+curl -X GET "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/question/123e4567-e89b-12d3-a456-426614174000" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+
+--------------------------------------------------------------------------------
+2.5 GET QUESTION BY ID
+--------------------------------------------------------------------------------
+URL: /api/question/question/:question_id
+METHOD: GET
+AUTHENTICATION: Required (Admin only)
+DESCRIPTION: Get a specific question by ID
+
+URL PARAMETERS:
+  - question_id (REQUIRED): Question UUID
+
+CURL EXAMPLE:
+curl -X GET "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/question/question/123e4567-e89b-12d3-a456-426614174000" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+
+--------------------------------------------------------------------------------
+2.6 CREATE QUESTION
+--------------------------------------------------------------------------------
+URL: /api/question/:surveyId
+METHOD: POST
+AUTHENTICATION: Required (Admin only)
+DESCRIPTION: Create a new question for a survey
+
+URL PARAMETERS:
+  - surveyId (REQUIRED): Survey UUID
+
+REQUEST BODY PARAMETERS:
+  - text (REQUIRED): Question text (string, 1-1000 characters)
+  - status (OPTIONAL): Question status (string: 'ACTIVE', 'PENDING', 'DE_ACTIVE')
+                       Default: 'ACTIVE'
+
+CURL EXAMPLE:
+curl -X POST "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/question/123e4567-e89b-12d3-a456-426614174000" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "How would you rate our customer service?",
+    "status": "ACTIVE"
+  }'
+
+--------------------------------------------------------------------------------
+2.7 UPDATE QUESTION
+--------------------------------------------------------------------------------
+URL: /api/question/:question_id
+METHOD: PUT
+AUTHENTICATION: Required (Admin only)
+DESCRIPTION: Update an existing question
+
+URL PARAMETERS:
+  - question_id (REQUIRED): Question UUID
+
+REQUEST BODY PARAMETERS:
+  - text (REQUIRED): Question text (string, 1-1000 characters)
+  - status (OPTIONAL): Question status (string: 'ACTIVE', 'PENDING', 'DE_ACTIVE')
+
+CURL EXAMPLE:
+curl -X PUT "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/question/123e4567-e89b-12d3-a456-426614174000" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "Updated question text",
+    "status": "ACTIVE"
+  }'
+
+--------------------------------------------------------------------------------
+2.8 DELETE QUESTION
+--------------------------------------------------------------------------------
+URL: /api/question/:question_id
+METHOD: DELETE
+AUTHENTICATION: Required (Admin only)
+DESCRIPTION: Delete a question
+
+URL PARAMETERS:
+  - question_id (REQUIRED): Question UUID
+
+CURL EXAMPLE:
+curl -X DELETE "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/question/123e4567-e89b-12d3-a456-426614174000" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+
+
+================================================================================
+                        3. RATING ENDPOINTS
+================================================================================
+
+--------------------------------------------------------------------------------
+3.1 SUBMIT RATING (PUBLIC)
+--------------------------------------------------------------------------------
+URL: /api/rating/public
+METHOD: POST
+AUTHENTICATION: None (Public)
+DESCRIPTION: Submit a rating without authentication
+
+REQUEST BODY PARAMETERS:
+  - question_id (REQUIRED): Question UUID or ID
+  - user_id (REQUIRED): User ID
+  - rating (REQUIRED): Rating value (integer, 1-5)
+
+CURL EXAMPLE:
+curl -X POST "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/rating/public" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "question_id": "123e4567-e89b-12d3-a456-426614174000",
+    "user_id": "user123",
+    "rating": 4
+  }'
+
+--------------------------------------------------------------------------------
+3.2 GET RATINGS BY QUESTION (PUBLIC)
+--------------------------------------------------------------------------------
+URL: /api/rating/public/question/:question_id
+METHOD: GET
+AUTHENTICATION: None (Public)
+DESCRIPTION: Get all ratings for a specific question
+
+URL PARAMETERS:
+  - question_id (REQUIRED): Question ID
+
+CURL EXAMPLE:
+curl -X GET "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/rating/public/question/123e4567-e89b-12d3-a456-426614174000"
+
+--------------------------------------------------------------------------------
+3.3 SUBMIT RATING (AUTHENTICATED)
+--------------------------------------------------------------------------------
+URL: /api/rating/
+METHOD: POST
+AUTHENTICATION: Required
+DESCRIPTION: Submit a rating with authentication
+
+REQUEST BODY PARAMETERS:
+  - question_id (REQUIRED): Question UUID or ID
+  - user_id (REQUIRED): User ID
+  - rating (REQUIRED): Rating value (integer, 1-5)
+
+CURL EXAMPLE:
+curl -X POST "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/rating/" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "question_id": "123e4567-e89b-12d3-a456-426614174000",
+    "user_id": "user123",
+    "rating": 5
+  }'
+
+--------------------------------------------------------------------------------
+3.4 UPDATE RATING
+--------------------------------------------------------------------------------
+URL: /api/rating/:ratingId
+METHOD: PUT
+AUTHENTICATION: Required
+DESCRIPTION: Update an existing rating
+
+URL PARAMETERS:
+  - ratingId (REQUIRED): Rating ID
+
+REQUEST BODY PARAMETERS:
+  - question_id (REQUIRED): Question UUID or ID
+  - user_id (REQUIRED): User ID
+  - rating (REQUIRED): Rating value (integer, 1-5)
+
+CURL EXAMPLE:
+curl -X PUT "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/rating/456" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "question_id": "123e4567-e89b-12d3-a456-426614174000",
+    "user_id": "user123",
+    "rating": 3
+  }'
+
+--------------------------------------------------------------------------------
+3.5 GET RATING BY ID
+--------------------------------------------------------------------------------
+URL: /api/rating/:ratingId
+METHOD: GET
+AUTHENTICATION: Required
+DESCRIPTION: Get a specific rating by ID
+
+URL PARAMETERS:
+  - ratingId (REQUIRED): Rating ID
+
+CURL EXAMPLE:
+curl -X GET "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/rating/456" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+
+--------------------------------------------------------------------------------
+3.6 GET RATINGS BY QUESTION (AUTHENTICATED)
+--------------------------------------------------------------------------------
+URL: /api/rating/question/:questionId
+METHOD: GET
+AUTHENTICATION: Required
+DESCRIPTION: Get all ratings for a specific question
+
+URL PARAMETERS:
+  - questionId (REQUIRED): Question ID
+
+CURL EXAMPLE:
+curl -X GET "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/rating/question/123e4567-e89b-12d3-a456-426614174000" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+
+--------------------------------------------------------------------------------
+3.7 GET RATINGS BY USER
+--------------------------------------------------------------------------------
+URL: /api/rating/user/:userId
+METHOD: GET
+AUTHENTICATION: Required
+DESCRIPTION: Get all ratings submitted by a specific user
+
+URL PARAMETERS:
+  - userId (REQUIRED): User ID
+
+CURL EXAMPLE:
+curl -X GET "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/rating/user/user123" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+
+--------------------------------------------------------------------------------
+3.8 DELETE RATING
+--------------------------------------------------------------------------------
+URL: /api/rating/:ratingId
+METHOD: DELETE
+AUTHENTICATION: Required
+DESCRIPTION: Delete a rating
+
+URL PARAMETERS:
+  - ratingId (REQUIRED): Rating ID
+
+CURL EXAMPLE:
+curl -X DELETE "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/rating/456" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+
+
+================================================================================
+                        4. STATISTICS ENDPOINTS
+================================================================================
+
+--------------------------------------------------------------------------------
+4.1 GET TOTAL RATINGS FOR ALL QUESTIONS IN SURVEY
+--------------------------------------------------------------------------------
+URL: /api/stat/:survey_id
+METHOD: GET
+AUTHENTICATION: Required (Admin only)
+DESCRIPTION: Get total ratings for all questions in a survey
+
+URL PARAMETERS:
+  - survey_id (REQUIRED): Survey ID
+
+CURL EXAMPLE:
+curl -X GET "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/stat/123e4567-e89b-12d3-a456-426614174000" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+
+--------------------------------------------------------------------------------
+4.2 GET RATINGS BY DATE RANGE
+--------------------------------------------------------------------------------
+URL: /api/stat/
+METHOD: GET
+AUTHENTICATION: Required (Admin only)
+DESCRIPTION: Get ratings filtered by date range
+
+QUERY PARAMETERS:
+  - startDate (REQUIRED): Start date (ISO 8601 format: YYYY-MM-DD)
+  - endDate (REQUIRED): End date (ISO 8601 format: YYYY-MM-DD)
+  - survey_id (REQUIRED): Survey ID
+
+CURL EXAMPLE:
+curl -X GET "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/stat/?startDate=2024-01-01&endDate=2024-12-31&survey_id=123e4567-e89b-12d3-a456-426614174000" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+
+--------------------------------------------------------------------------------
+4.3 GET TOTAL RATING BY QUESTION ID
+--------------------------------------------------------------------------------
+URL: /api/stat/question/:question_id
+METHOD: GET
+AUTHENTICATION: Required (Admin only)
+DESCRIPTION: Get total ratings for a specific question
+
+URL PARAMETERS:
+  - question_id (REQUIRED): Question ID
+
+CURL EXAMPLE:
+curl -X GET "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/stat/question/123e4567-e89b-12d3-a456-426614174000" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+
+
+================================================================================
+                        5. TEST ENDPOINT
+================================================================================
+
+--------------------------------------------------------------------------------
+5.1 API HEALTH CHECK
+--------------------------------------------------------------------------------
+URL: /api/test
+METHOD: GET
+AUTHENTICATION: None (Public)
+DESCRIPTION: Test if the API is running
+
+CURL EXAMPLE:
+curl -X GET "http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/test"
+
+EXPECTED RESPONSE:
+{
+  "message": "API is working!"
+}
+
+
+================================================================================
+                        NOTES FOR FRONTEND DEVELOPERS
+================================================================================
+
+1. CORS IS ENABLED:
+   - All origins are currently allowed for development
+   - No CORS issues should occur
+
+2. AUTHENTICATION:
+   - Use "Authorization: Bearer <token>" header for protected routes
+   - Admin routes require admin privileges in the token
+
+3. UUID FORMAT:
+   - All survey_id, question_id should be valid UUIDs
+   - Example: 123e4567-e89b-12d3-a456-426614174000
+
+4. RATING VALUES:
+   - Must be integers between 1 and 5 (inclusive)
+
+5. DATE FORMAT:
+   - Use ISO 8601 format: YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss.sssZ
+   - Example: 2024-12-14 or 2024-12-14T10:30:00.000Z
+
+6. QUESTION STATUS VALUES:
+   - ACTIVE: Question is active
+   - PENDING: Question is pending approval
+   - DE_ACTIVE: Question is deactivated
+
+7. ERROR RESPONSES:
+   - 400: Bad Request (validation errors)
+   - 401: Unauthorized (missing or invalid token)
+   - 403: Forbidden (insufficient permissions)
+   - 404: Not Found (resource doesn't exist)
+   - 500: Internal Server Error
+
+8. SUCCESS RESPONSES:
+   - 200: OK (successful GET, PUT, DELETE)
+   - 201: Created (successful POST)
+
+================================================================================
+                        QUICK START EXAMPLES
+================================================================================
+
+1. TEST THE API:
+   curl http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/test
+
+2. GET PUBLIC SURVEYS:
+   curl http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/survey/public
+
+3. GET PUBLIC QUESTIONS:
+   curl http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/question/public
+
+4. SUBMIT A PUBLIC RATING:
+   curl -X POST http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000/api/rating/public \
+     -H "Content-Type: application/json" \
+     -d '{"question_id":"YOUR_QUESTION_ID","user_id":"user123","rating":5}'
+
+================================================================================
+                              END OF DOCUMENTATION
+================================================================================
+
+Last Updated: December 14, 2025
+Version: 1.0
+Contact: Backend Team
+

@@ -1,0 +1,90 @@
+DEPLOYMENT INSTRUCTIONS FOR AWS EC2
+=====================================
+
+STEP 1: Save your private key
+------------------------------
+1. Open Notepad
+2. Paste the RSA private key content
+3. Save as: E:\aws-services-stage.pem
+4. Run in PowerShell:
+   icacls E:\aws-services-stage.pem /inheritance:r
+   icacls E:\aws-services-stage.pem /grant:r "%username%:R"
+
+STEP 2: Connect to EC2
+-----------------------
+ssh -i "E:\aws-services-stage.pem" ubuntu@ec2-15-223-192-87.ca-central-1.compute.amazonaws.com
+
+STEP 3: Install Docker on EC2 (run these commands on EC2)
+----------------------------------------------------------
+sudo apt-get update
+sudo apt-get install -y docker.io git
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo usermod -aG docker ubuntu
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+exit
+
+STEP 4: Reconnect to EC2
+-------------------------
+ssh -i "E:\aws-services-stage.pem" ubuntu@ec2-15-223-192-87.ca-central-1.compute.amazonaws.com
+
+STEP 5: Transfer project to EC2 (run from NEW PowerShell window on local machine)
+----------------------------------------------------------------------------------
+cd E:\
+scp -i "E:\aws-services-stage.pem" -r surveyProj ubuntu@ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:~/
+
+STEP 6: Setup on EC2 (run on EC2 SSH session)
+----------------------------------------------
+cd ~/surveyProj
+cp .env.example .env
+nano .env
+# Edit the .env file with your actual database credentials
+# Save: Ctrl+X, Y, Enter
+
+STEP 7: Build and run Docker
+-----------------------------
+docker-compose build
+docker-compose up -d
+docker ps
+docker-compose logs -f
+
+STEP 8: Configure AWS Security Group
+-------------------------------------
+1. Go to AWS Console: https://console.aws.amazon.com/ec2/
+2. Click on Instances
+3. Select instance: i-07c4c04db1a51022e
+4. Click Security tab
+5. Click on Security Group link
+6. Click "Edit inbound rules"
+7. Click "Add rule"
+8. Type: Custom TCP
+9. Port: 3000
+10. Source: 0.0.0.0/0
+11. Click "Save rules"
+
+STEP 9: Test your API
+----------------------
+Open browser or run:
+curl http://ec2-15-223-192-87.ca-central-1.compute.amazonaws.com:3000
+
+USEFUL COMMANDS
+---------------
+# View logs
+docker-compose logs -f
+
+# Restart service
+docker-compose restart
+
+# Stop service
+docker-compose down
+
+# Rebuild and restart
+docker-compose up -d --build
+
+# Check status
+docker ps
+
+# SSH into container
+docker exec -it surveyproj-survey-api-1 sh
+
