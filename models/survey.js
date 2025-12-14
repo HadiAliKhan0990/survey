@@ -17,6 +17,10 @@ const Survey = sequelize.define(
       type: DataTypes.STRING(255),
       allowNull: false,
     },
+    company_name: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+    },
     status: {
       type: DataTypes.ENUM('ACTIVE', 'PENDING', 'DE_ACTIVE'),
       defaultValue: 'ACTIVE',

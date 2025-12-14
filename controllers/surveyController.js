@@ -1,6 +1,7 @@
 const Survey = require('../models/survey');
 const { validationResult } = require('express-validator');
 const { HTTP_STATUS_CODE } = require('../utils/httpStatus');
+const { Op } = require('sequelize');
 
 const saveSurvey = async (req, res) => {
   const errors = validationResult(req);
@@ -11,11 +12,12 @@ const saveSurvey = async (req, res) => {
   }
 
   try {
-    const { name, heading, user_id } = req.body;
+    const { name, heading, company_name, user_id } = req.body;
 
     const newSurvey = await Survey.create({ 
       name, 
       heading, 
+      company_name,
       user_id,
       status: 'ACTIVE'
     });
@@ -33,8 +35,17 @@ const saveSurvey = async (req, res) => {
 
 const getAllSurveys = async (req, res) => {
   try {
+    const { company_name } = req.query;
+    const whereClause = { status: 'ACTIVE' };
+
+    if (company_name) {
+      whereClause.company_name = {
+        [Op.like]: `%${company_name.trim()}%`,
+      };
+    }
+
     const surveys = await Survey.findAll({
-      where: { status: 'ACTIVE' }
+      where: whereClause
     });
     res.status(HTTP_STATUS_CODE.OK).json({
       message: 'Surveys retrieved successfully',
@@ -81,7 +92,7 @@ const updateSurvey = async (req, res) => {
 
   try {
     const { id } = req.params;
-    const { name, heading, status } = req.body;
+    const { name, heading, company_name, status } = req.body;
 
     const survey = await Survey.findByPk(id);
     if (!survey) {
@@ -90,7 +101,7 @@ const updateSurvey = async (req, res) => {
       });
     }
 
-    await survey.update({ name, heading, status });
+    await survey.update({ name, heading, company_name, status });
     res.status(HTTP_STATUS_CODE.OK).json({
       message: 'Survey updated successfully',
       survey,
@@ -129,13 +140,47 @@ const deleteSurvey = async (req, res) => {
 const getSurveysByUserId = async (req, res) => {
   try {
     const { userId } = req.params;
+    const { company_name } = req.query;
+    const whereClause = {
+      user_id: userId,
+      status: 'ACTIVE',
+    };
+
+    if (company_name) {
+      whereClause.company_name = {
+        [Op.like]: `%${company_name.trim()}%`,
+      };
+    }
+
     const surveys = await Survey.findAll({
-      where: { 
-        user_id: userId,
-        status: 'ACTIVE'
-      }
+      where: whereClause,
     });
     
+    res.status(HTTP_STATUS_CODE.OK).json({
+      message: 'Surveys retrieved successfully',
+      surveys,
+    });
+  } catch (error) {
+    res.status(HTTP_STATUS_CODE.INTERNAL_SERVER).json({
+      message: 'Error retrieving surveys',
+      error: error.message,
+    });
+  }
+};
+
+const getSurveysByCompanyName = async (req, res) => {
+  try {
+    const { companyName } = req.params;
+
+    const surveys = await Survey.findAll({
+      where: {
+        company_name: {
+          [Op.like]: `%${companyName.trim()}%`,
+        },
+        status: 'ACTIVE',
+      },
+    });
+
     res.status(HTTP_STATUS_CODE.OK).json({
       message: 'Surveys retrieved successfully',
       surveys,
@@ -154,5 +199,6 @@ module.exports = {
   getSurveyById, 
   updateSurvey, 
   deleteSurvey,
-  getSurveysByUserId
+  getSurveysByUserId,
+  getSurveysByCompanyName
 };

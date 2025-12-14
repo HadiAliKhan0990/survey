@@ -9,18 +9,21 @@ const {
   getSurveyById,
   updateSurvey,
   deleteSurvey,
-  getSurveysByUserId
+  getSurveysByUserId,
+  getSurveysByCompanyName
 } = require('../controllers/surveyController');
 
 const { surveyValidations } = require('../validations/survey');
 
 // Public routes (no authentication required)
 router.get('/public', getAllSurveys);
+router.get('/public/company/:companyName', getSurveysByCompanyName);
 
 // Admin only routes
 router.get('/', verifyToken, requireAdmin, getAllSurveys);
-router.get('/:id', verifyToken, requireAdmin, getSurveyById);
 router.get('/user/:userId', verifyToken, requireAdmin, getSurveysByUserId);
+router.get('/company/:companyName', verifyToken, requireAdmin, getSurveysByCompanyName);
+router.get('/:id', verifyToken, requireAdmin, getSurveyById);
 
 router.post(
   '/',
