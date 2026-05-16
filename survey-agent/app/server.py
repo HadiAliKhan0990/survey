@@ -5,14 +5,14 @@ import os
 from contextlib import asynccontextmanager
 from typing import Any
 
-from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from . import graph, memory as db
+from .env import load_survey_env
 
-load_dotenv()
+load_survey_env()
 
 
 @asynccontextmanager
@@ -55,6 +55,15 @@ class ProfileRequest(BaseModel):
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok", "service": "survey-agent"}
+
+
+@app.get("/health/db")
+def health_db() -> dict[str, Any]:
+    """Confirm agent uses the same database as the Survey API (Sequelize)."""
+    try:
+        return {"status": "ok", **db.verify_db_connection()}
+    except Exception as e:
+        raise HTTPException(503, str(e)) from e
 
 
 @app.get("/services")

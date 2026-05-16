@@ -1,9 +1,11 @@
 """Entry point: python main.py"""
-import uvicorn
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
+import uvicorn
+
+from app.env import load_survey_env
+
+load_survey_env()
 
 if __name__ == "__main__":
     port = int(os.getenv("AGENT_PORT", "8000"))

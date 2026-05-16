@@ -1,6 +1,11 @@
 """
 Agent persistence — uses the same MySQL/PostgreSQL database as the Survey API.
 
+Connection uses the same env vars as Sequelize (config/database.js):
+  DB_DIALECT, DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD
+
+Loaded from surveyProj/.env first (see app/env.py).
+
 Tables (created on init_db):
   agent_messages      — conversation history for LLM context
   agent_context       — per-user key/value (active service, pending CRUD fields)
@@ -14,6 +19,10 @@ import os
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
+
+from .env import load_survey_env
+
+load_survey_env()
 
 try:
     import pymysql
@@ -41,16 +50,83 @@ def _utc_now() -> str:
 
 
 def get_db_config() -> DBConfig:
-    dialect = (os.getenv("DB_DIALECT") or "mysql").lower()
+    """Same variables as Node Sequelize — must match surveyProj/.env."""
+    dialect = (os.getenv("DB_DIALECT") or "").strip().lower()
+    database = (os.getenv("DB_DATABASE") or "").strip()
+    username = (os.getenv("DB_USERNAME") or "").strip()
+    host = (os.getenv("DB_HOST") or "").strip()
+    password = os.getenv("DB_PASSWORD") or ""
+
+    missing = [k for k, v in [
+        ("DB_DIALECT", dialect),
+        ("DB_DATABASE", database),
+        ("DB_USERNAME", username),
+        ("DB_HOST", host),
+    ] if not v]
+    if missing:
+        raise RuntimeError(
+            f"Missing database env var(s): {', '.join(missing)}. "
+            f"Set them in {os.path.join(os.path.dirname(__file__), '..', '..', '.env')} "
+            "(same file used by the Survey API)."
+        )
+
     engine = "postgresql" if dialect in ("postgres", "postgresql", "pg") else "mysql"
+    port_str = (os.getenv("DB_PORT") or "").strip()
+    port = int(port_str) if port_str else (3306 if engine == "mysql" else 5432)
+
     return DBConfig(
         engine=engine,
-        host=os.getenv("DB_HOST", "localhost"),
-        port=int(os.getenv("DB_PORT", "3306" if engine == "mysql" else "5432")),
-        database=os.getenv("DB_DATABASE", "survey"),
-        username=os.getenv("DB_USERNAME", "root"),
-        password=os.getenv("DB_PASSWORD", ""),
+        host=host,
+        port=port,
+        database=database,
+        username=username,
+        password=password,
     )
+
+
+def db_connection_label(cfg: DBConfig | None = None) -> str:
+    cfg = cfg or get_db_config()
+    return f"{cfg.engine}://{cfg.username}@{cfg.host}:{cfg.port}/{cfg.database}"
+
+
+def verify_db_connection() -> dict[str, str]:
+    """Ping DB and confirm Survey tables exist (proves we share the Survey DB)."""
+    cfg = get_db_config()
+    with _connect(cfg) as conn:
+        if cfg.engine == "mysql":
+            cur = _execute(conn, "SELECT DATABASE() AS db")
+            row = cur.fetchone()
+            current_db = row["db"] if isinstance(row, dict) else row[0]
+            cur = _execute(
+                conn,
+                """
+                SELECT table_name FROM information_schema.tables
+                WHERE table_schema = DATABASE()
+                  AND LOWER(table_name) IN ('survey', 'question', 'rating')
+                """,
+            )
+            tables = [r["table_name"] if isinstance(r, dict) else r[0] for r in cur.fetchall()]
+        else:
+            cur = _execute(conn, "SELECT current_database() AS db")
+            row = cur.fetchone()
+            current_db = row[0]
+            cur = _execute(
+                conn,
+                """
+                SELECT table_name FROM information_schema.tables
+                WHERE table_schema = current_schema()
+                  AND LOWER(table_name) IN ('survey', 'question', 'rating')
+                """,
+            )
+            tables = [r[0] for r in cur.fetchall()]
+
+    return {
+        "configured_database": cfg.database,
+        "connected_database": str(current_db),
+        "connection": db_connection_label(cfg),
+        "survey_tables_found": ", ".join(sorted(tables)) if tables else "none",
+        "same_db_as_survey_api": str(current_db) == cfg.database and len(tables) > 0,
+    }
 
 
 def _connect(cfg: DBConfig):
@@ -90,6 +166,7 @@ def _execute(conn, sql: str, params: tuple | dict = ()):
 
 def init_db() -> None:
     cfg = get_db_config()
+    print(f"[db] Agent using Survey project database: {db_connection_label(cfg)}")
     with _connect(cfg) as conn:
         if cfg.engine == "mysql":
             stmts = [
@@ -140,9 +217,8 @@ def init_db() -> None:
             for sql in stmts:
                 _execute(conn, sql)
             conn.commit()
-            return
-
-        stmts = [
+        else:
+            stmts = [
             """
             CREATE TABLE IF NOT EXISTS agent_messages (
               id BIGSERIAL PRIMARY KEY,
@@ -186,10 +262,16 @@ def init_db() -> None:
               updated_at TIMESTAMPTZ NOT NULL
             )
             """,
-        ]
-        for sql in stmts:
-            _execute(conn, sql)
-        conn.commit()
+            ]
+            for sql in stmts:
+                _execute(conn, sql)
+            conn.commit()
+
+    info = verify_db_connection()
+    if info.get("same_db_as_survey_api"):
+        print(f"[db] Verified shared Survey database. ORM tables: {info['survey_tables_found']}")
+    else:
+        print(f"[db] WARNING: could not confirm Survey tables in this database: {info}")
 
 
 # ── Messages ──────────────────────────────────────────────────────────────────
