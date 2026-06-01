@@ -1,6 +1,3 @@
-"""
-LLM provider — language in (intent tier-3) and language out (generate) only.
-"""
 from __future__ import annotations
 
 import json
@@ -8,7 +5,6 @@ import os
 import re
 from typing import Any
 
-# ── Action inference (code, no LLM) ───────────────────────────────────────────
 
 _ACTION_KEYWORDS: dict[str, list[str]] = {
     "create": ["create", "add", "new", "make", "start"],
@@ -29,7 +25,6 @@ def _infer_action(message: str) -> str:
     return "query"
 
 
-# ── LLM client ────────────────────────────────────────────────────────────────
 
 def _get_llm():
     from langchain_openai import ChatOpenAI
