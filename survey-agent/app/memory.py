@@ -1,17 +1,3 @@
-"""
-Agent persistence — uses the same MySQL/PostgreSQL database as the Survey API.
-
-Connection uses the same env vars as Sequelize (config/database.js):
-  DB_DIALECT, DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD
-
-Loaded from surveyProj/.env first (see app/env.py).
-
-Tables (created on init_db):
-  agent_messages      — conversation history for LLM context
-  agent_context       — per-user key/value (active service, pending CRUD fields)
-  agent_sessions      — session metadata + interrupt state
-  agent_user_profile  — default company, industry, preferences
-"""
 from __future__ import annotations
 
 import json
@@ -27,12 +13,12 @@ load_survey_env()
 try:
     import pymysql
 except ImportError:
-    pymysql = None  # type: ignore
+    pymysql = None  
 
 try:
     import psycopg
 except ImportError:
-    psycopg = None  # type: ignore
+    psycopg = None  
 
 
 @dataclass(frozen=True)
@@ -274,7 +260,6 @@ def init_db() -> None:
         print(f"[db] WARNING: could not confirm Survey tables in this database: {info}")
 
 
-# ── Messages ──────────────────────────────────────────────────────────────────
 
 def save_message(
     user_id: str,
@@ -341,7 +326,6 @@ def get_llm_context(user_id: str, limit: int = 8, session_id: str | None = None)
     return [{"role": h["role"], "content": h["content"]} for h in hist]
 
 
-# ── Context (KV) ──────────────────────────────────────────────────────────────
 
 def get_context(user_id: str) -> dict[str, Any]:
     cfg = get_db_config()
@@ -406,7 +390,6 @@ def set_pending_operation(user_id: str, op: dict[str, Any] | None) -> None:
     set_context(user_id, pending_operation=op)
 
 
-# ── Sessions ──────────────────────────────────────────────────────────────────
 
 def upsert_session(
     user_id: str,
@@ -449,7 +432,6 @@ def upsert_session(
     return thread_id
 
 
-# ── User profile ──────────────────────────────────────────────────────────────
 
 def get_profile(user_id: str) -> dict[str, Any]:
     cfg = get_db_config()
