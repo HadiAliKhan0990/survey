@@ -23,7 +23,7 @@ def _get_client() -> httpx.Client:
 
 
 def _base() -> str:
-    return os.getenv("SURVEY_API_BASE_URL", "http://localhost:3000").rstrip("/")
+    return os.getenv("SURVEY_API_BASE_URL", "https://survey.townticks.com").rstrip("/")
 
 
 def _build_headers(user_token: str | None) -> dict[str, str]:
